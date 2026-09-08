@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Supplier data is not redistributed through the repository.
+data/source/*
+!data/source/.gitkeep
+
+# Generated, but committed deliberately for provenance:
+#   data/benchmark/, data/ground_truth/, data/dev/

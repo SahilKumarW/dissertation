@@ -1,0 +1,74 @@
+{
+  "benchmark_version": "nz-dd-v1",
+  "generated_at_utc": "2026-09-08T16:17:32.695404+00:00",
+  "policy": {
+    "distance_direction_pattern": "(?:ca\\.?|c\\.?|approx\\.?|approximately|about|~)?\\s*\\d+(?:[\\.,]\\d+)?\\s*(?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\\s*\\.?\\s*(?:north[\\s\\-]?north[\\s\\-]?east|north[\\s\\-]?north[\\s\\-]?west|south[\\s\\-]?south[\\s\\-]?east|south[\\s\\-]?south[\\s\\-]?west|east[\\s\\-]?north[\\s\\-]?east|east[\\s\\-]?south[\\s\\-]?east|west[\\s\\-]?north[\\s\\-]?west|west[\\s\\-]?south[\\s\\-]?west|north[\\s\\-]?east|north[\\s\\-]?west|south[\\s\\-]?east|south[\\s\\-]?west|north|south|east|west|n\\.?n\\.?e|n\\.?n\\.?w|s\\.?s\\.?e|s\\.?s\\.?w|e\\.?n\\.?e|e\\.?s\\.?e|w\\.?n\\.?w|w\\.?s\\.?w|n\\.?e|n\\.?w|s\\.?e|s\\.?w|nth|sth|n|s|e|w)\\b\\.?[\\s\\-]*(?:of|from)\\b",
+    "coordinate_equality_decimals": 6,
+    "bounding_boxes": {
+      "nz_mainland": {
+        "lat_min": -47.5,
+        "lat_max": -34.0,
+        "lon_min": 166.0,
+        "lon_max": 179.2
+      },
+      "chatham_islands": {
+        "lat_min": -44.5,
+        "lat_max": -43.5,
+        "lon_min": -177.2,
+        "lon_max": -175.7
+      }
+    },
+    "eligible_audit_categories": [
+      "DUPLICATE_ROWS_SAME_COORDINATE",
+      "SINGLE_ROW_EXACT",
+      "SINGLE_ROW_NORMALIZED"
+    ],
+    "benchmark_size": 75,
+    "one_record_per_coordinate": true,
+    "random_seed": 20260908,
+    "normalisation_version": "normalise-v1"
+  },
+  "counts": {
+    "description_rows_unique": 4020,
+    "distance_direction_candidates": 313,
+    "eligible_after_quality_gate": 292,
+    "removed_sharing_a_coordinate": 31,
+    "independent_eligible_records": 261,
+    "rejected_outside_bounding_boxes": 0,
+    "benchmark_size": 75,
+    "defensible_denominator": 75,
+    "dev_pool_size": 3945,
+    "corpus_rows": 30461,
+    "rows_missing_coordinates": 0
+  },
+  "audit_category_counts": {
+    "SINGLE_ROW_EXACT": 184,
+    "DUPLICATE_ROWS_SAME_COORDINATE": 108,
+    "SINGLE_ROW_NORMALIZED": 0,
+    "UNRESOLVED_MULTI_COORD": 21,
+    "NO_COORDINATE": 0,
+    "NO_MATCH": 0
+  },
+  "artefact_hashes": {
+    "benchmark.csv": "d68abdc7090c2c06e99c1155484a449453268c8e3b5f3de75f61f0f1c478acb3",
+    "ground_truth.csv": "3aa5eea1834fa9aa36efa80a8cda287b26149f29fad226838b66ce8696002620",
+    "dev_pool.csv": "27b78205a99d0ab3b0f2dd810dbd4f8e6e31535c4f1a004f649d9225ec3aa85e"
+  },
+  "source_hashes": {
+    "SampleData-NoCoords.xlsx": "1d861cd0b52703e04533b2b29d2e47ac566b6857c14409322ab6fcbe7ecc41bd",
+    "MWLR-Data-CHR-20230307 nz only with coordinates desc 60 or more.csv": "154ab572be5578a7d7fa0e7eeec72ec2919e1545a0c93f54ad64b9d4e476470d"
+  },
+  "code_hashes": {
+    "benchmark_builder.py": "3c57cf9fe803b6b489a22d3ee4fc1a56681b2299035b0d75612e1d4a9d292fbb",
+    "normalise.py": "83e6fce4729abf8d6ca7b93cdb7181841f9b9f11778216265b6a3da893d791c1"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas": "3.0.5",
+    "numpy": "2.5.3",
+    "openpyxl": "3.1.5",
+    "yaml": "6.0.3"
+  },
+  "reproducibility_note": "generated_at_utc makes this manifest non-reproducible byte-for-byte. Reproducibility is asserted over artefact_hashes, which are stable for a fixed policy, source pair and interpreter."
+}

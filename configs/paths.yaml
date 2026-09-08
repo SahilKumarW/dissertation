@@ -1,0 +1,31 @@
+# Paths are relative to the repository root unless absolute.
+#
+# The two source files are supplier data and are read-only. Copy them into
+# data/source/ (or point source_dir elsewhere with --source-dir).
+
+source_dir: data/source
+descriptions_file: SampleData-NoCoords.xlsx
+descriptions_sheet: Sheet1
+descriptions_column: description
+
+# EVALUATION-ONLY. This file carries a coordinate for every description in the
+# corpus, including every benchmark and dev record. It must never be read by
+# retrieval, grounding, disambiguation, or any prediction code path.
+coordinates_file: MWLR-Data-CHR-20230307 nz only with coordinates desc 60 or more.csv
+coordinates_locality_column: verbatimLocality
+coordinates_lat_column: decimalLatitude
+coordinates_lon_column: decimalLongitude
+coordinates_id_column: eventId
+
+# Carried into ground_truth.csv as descriptive metadata for the error analysis
+# and any sensitivity check. NOT used as a quality gate: the meaning of
+# georeferenceIsDerived is not documented in the supplied extract, and
+# coordinateUncertaintyInMeters is populated on only 10 of 30,461 rows, so
+# gating on either would be a guess dressed as a criterion.
+coordinates_metadata_columns:
+  - verbatimCoordinateSystem
+  - georeferenceIsDerived
+
+benchmark_dir: data/benchmark
+ground_truth_dir: data/ground_truth
+dev_dir: data/dev

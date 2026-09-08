@@ -1,0 +1,79 @@
+# Benchmark construction policy.
+#
+# These values are PRE-REGISTERED. They are fixed before the builder is run and
+# must not be changed to improve any experimental result. Changing any value
+# here creates a new benchmark version and invalidates every prior run.
+#
+# See docs/BENCHMARK_CONSTRUCTION.md for the rationale behind each choice.
+
+benchmark_version: nz-dd-v1
+
+# --- Eligibility -----------------------------------------------------------
+# A description is a DISTANCE_DIRECTION candidate if this pattern matches.
+# Matched case-insensitively against the ORIGINAL description text.
+#   optional hedge -> number -> distance unit -> compass direction -> of/from
+#
+# The pattern is written across several lines for readability. ALL literal
+# whitespace is removed before compilation, so spaces must be expressed as
+# \s or [\s\-]. Direction alternatives are ordered longest-first so that the
+# match does not depend on backtracking.
+distance_direction_pattern: >-
+  (?:ca\.?|c\.?|approx\.?|approximately|about|~)?\s*\d+(?:[\.,]\d+)?\s*
+  (?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\s*\.?\s*
+  (?:north[\s\-]?north[\s\-]?east|north[\s\-]?north[\s\-]?west|
+  south[\s\-]?south[\s\-]?east|south[\s\-]?south[\s\-]?west|
+  east[\s\-]?north[\s\-]?east|east[\s\-]?south[\s\-]?east|
+  west[\s\-]?north[\s\-]?west|west[\s\-]?south[\s\-]?west|
+  north[\s\-]?east|north[\s\-]?west|south[\s\-]?east|south[\s\-]?west|
+  north|south|east|west|
+  n\.?n\.?e|n\.?n\.?w|s\.?s\.?e|s\.?s\.?w|e\.?n\.?e|e\.?s\.?e|w\.?n\.?w|w\.?s\.?w|
+  n\.?e|n\.?w|s\.?e|s\.?w|nth|sth|n|s|e|w)
+  \b\.?[\s\-]*(?:of|from)\b
+
+# --- Ground-truth quality gate --------------------------------------------
+# Coordinates are compared for equality after rounding to this many decimals.
+# 6 dp is ~0.11 m at NZ latitudes, well below any plausible georeferencing
+# precision, so this collapses float noise without merging distinct points.
+coordinate_equality_decimals: 6
+
+# Bounding boxes a ground-truth coordinate must fall inside. The Chatham
+# Islands sit east of the antimeridian and carry negative longitudes, so they
+# need their own box; a single naive box would silently discard them.
+bounding_boxes:
+  nz_mainland:
+    lat_min: -47.5
+    lat_max: -34.0
+    lon_min: 166.0
+    lon_max: 179.2
+  chatham_islands:
+    lat_min: -44.5
+    lat_max: -43.5
+    lon_min: -177.2
+    lon_max: -175.7
+
+# Audit categories accepted into the benchmark. Categories outside this list
+# are audited and reported but are not eligible for selection, because they do
+# not have a single defensible answer key.
+eligible_audit_categories:
+  - SINGLE_ROW_EXACT
+  - DUPLICATE_ROWS_SAME_COORDINATE
+  - SINGLE_ROW_NORMALIZED
+
+# --- Item independence -----------------------------------------------------
+# Some descriptions are near-duplicates of each other (the same site recorded
+# twice with different wording) and resolve to the identical coordinate. Two
+# such records are not independent items: they contribute the same evidence
+# twice to a paired test. When true, at most one record is kept per distinct
+# ground-truth coordinate, chosen deterministically as the first by sorted
+# normalised key.
+one_record_per_coordinate: true
+
+# --- Sampling --------------------------------------------------------------
+benchmark_size: 75
+random_seed: 20260908
+benchmark_id_prefix: NZDD
+
+# --- Output formatting -----------------------------------------------------
+# Fixed so that a rebuild is byte-identical.
+coordinate_output_decimals: 8
+csv_line_terminator: "\n"
