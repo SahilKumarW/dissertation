@@ -1,7 +1,8 @@
 # Benchmark Construction — Pre-Registration
 
-**Benchmark version:** `nz-dd-v1`
-**Status:** policy fixed; artefacts built and hashed
+**Benchmark version:** `nz-dd-v2` — see the change log in section 7 for what
+superseded `nz-dd-v1` and why
+**Status:** frozen. Artefacts built, hashed and used; the experiment is complete
 **Applies to:** `configs/benchmark.yaml`, `src/georef/data/benchmark_builder.py`
 
 This document records how the benchmark, ground truth and dev pool were
@@ -85,7 +86,10 @@ The pattern covers eight- and sixteen-point directions in spelled and
 abbreviated form, with or without periods (`SE`, `S.E.`, `south-east`,
 `east-northeast`, `N.N.W.`), and the units `km`, `m`, `mile`, `mls`.
 
-313 of 4,020 descriptions match.
+308 of 4,020 descriptions match.
+
+The `\b` after the unit group is load-bearing; see the change log for what it
+prevents.
 
 **Known limitation.** This is a sampling frame, not a classifier. It excludes
 relations that are not compass-bearing offsets, which is intended
@@ -110,7 +114,7 @@ untouched `verbatimLocality` first, normalised match as a labelled fallback:
 Coordinates are compared after rounding to 6 decimal places (~0.11 m), which
 collapses float noise without merging distinct points.
 
-Result: 184 / 108 / 0 / 21 / 0 / 0. `SINGLE_ROW_NORMALIZED` is zero and
+Result: 179 / 108 / 0 / 21 / 0 / 0. `SINGLE_ROW_NORMALIZED` is zero and
 `NO_MATCH` is zero because the descriptions were extracted verbatim from the
 corpus; both categories are retained so that a future corpus change is visible.
 
@@ -140,20 +144,55 @@ of Erua township`). They resolve to the identical coordinate and are not
 independent items: a paired test would count the same evidence twice.
 
 At most one record is kept per distinct ground-truth coordinate, chosen as the
-first by sorted normalised key. This removed 31 records, leaving 261 independent
+first by sorted normalised key. This removed 31 records, leaving 256 independent
 eligible records.
 
 ### 3.7 Selection
 
-75 records sampled with `random.Random(20260908).sample` from the eligible keys
-in sorted order, then re-sorted and numbered `NZDD-001` … `NZDD-075`.
+75 records selected by ordering the eligible keys on `sha256("20260908:<key>")`
+and taking the first 75, then re-sorted and numbered `NZDD-001` … `NZDD-075`.
 
 Selection depends only on this document's policy. It does not depend on any
 model output, because no model existed when the benchmark was built.
 
-`n = 75` matches the size in the specification. 261 eligible records remain
+`n = 75` matches the size in the specification. 256 eligible records remain
 available, so a larger benchmark is possible if more statistical power is
 wanted; that would be a new benchmark version, not an edit to this one.
+
+### 3.8 Development ground truth
+
+100 records selected by the same hash ordering under seed `20260909`, from the
+eligible records the benchmark did not take, numbered `DEVGT-001` … `DEVGT-100`.
+
+Its purpose is declared here in advance and is bounded: **selecting the
+configuration of Condition B once, before the experiment freeze.** Concretely
+that covers
+
+* the extraction prompt version;
+* which retrieval channels are enabled, and whether cross-encoder reranking is
+  used;
+* the multi-anchor resolution policy and its disagreement threshold;
+* the candidate-disambiguation weights and the score-margin abstention
+  threshold.
+
+It exists so those choices are measured rather than asserted. It does not cover
+anything measured against the benchmark, and it is used once: a configuration is
+chosen, the experiment is frozen, and the dev set is not consulted again.
+
+This is a widening of the purpose recorded when the set was first built, which
+named retrieval configuration only. The widening is recorded here, with its
+date, rather than applied silently — a pre-registration that quietly grows to
+cover whatever was done to it is not a pre-registration. It was made before any
+prediction was run against the benchmark and before the freeze.
+
+It is not a second benchmark. No headline result is reported from it, and after
+the freeze it is not consulted again. Tests assert that no dev description
+appears in the benchmark and that no dev record shares a ground-truth
+coordinate with a benchmark record, so the independence rule spans both sets.
+
+Adding it does not disturb the benchmark: the benchmark is drawn first from the
+sorted eligible keys, and the dev set is drawn from the remainder with its own
+seed. Both published hashes are unchanged, and a test asserts it.
 
 ## 4. Denominator
 
@@ -202,7 +241,45 @@ The manifest records `generated_at_utc`, so it is not byte-reproducible.
 Reproducibility is asserted over the three artefact hashes, which are stable for
 a fixed policy, source pair and interpreter, and is tested.
 
-## 7. Change control
+## 7. Change log
+
+### nz-dd-v2 (supersedes nz-dd-v1, before any experiment was run)
+
+Two corrections, both made before the freeze and before any prediction existed.
+
+**Eligibility defect.** The v1 pattern matched `14 miles from Glade House` by
+consuming the plural `s` of "miles" as a South bearing: unit `mile`, direction
+`s`, then `from`. Five descriptions stating no direction at all were admitted
+as DISTANCE_DIRECTION. It surfaced when the extraction pilot returned
+`RELATIVE_LOCATION` for one of them and the pipeline correctly abstained.
+
+The fix is a word boundary immediately after the unit group, so a unit's own
+plural cannot be read as a direction. Candidates fall from 313 to 308,
+independent eligible records from 261 to 256. Every true positive still
+matches, including `1 mile Sth of Minaret Creek` and `55 mls N.N.W. of
+Auckland`, and there are tests for both directions of this.
+
+**Selection fragility.** Correcting five ineligible records changed 52 of the
+75 selections, because `random.sample` draws as a function of the whole list.
+Selection now orders eligible keys by `sha256("<seed>:<key>")` and takes the
+first N. It is still deterministic and seed-controlled, but each record's
+position depends only on itself, so a future construction fix disturbs only the
+records it actually concerns. Verified: shrinking the benchmark from 75 to 70
+yields a nested subset of exactly 70 of the original records.
+
+SHA-256 ordering is also portable in a way the Mersenne Twister is not — the
+draw is identical on any interpreter and platform.
+
+**v2 hashes.**
+
+    benchmark.csv         50d2759cc374350ed278b53b24b5e91e1bf498f56cfc57e01ad47ea2777cb95a
+    ground_truth.csv      4e42f42c718ba41138eeeeb89286dbe8af7b1364a81130841d2ca09927f89a4d
+    dev_ground_truth.csv  3bb06a95f516cc1457f46d9090acdda03809c906c89586246abb5789611241a3
+
+The v1 hashes quoted earlier in this document and in `DATA_PROVENANCE.md` are
+superseded and must not be cited.
+
+## 8. Change control
 
 Any change to `configs/benchmark.yaml` produces a different benchmark. Such a
 change requires a new `benchmark_version`, a new build, and an entry in this
