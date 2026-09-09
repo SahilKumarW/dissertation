@@ -1,0 +1,66 @@
+{
+  "source_authority": "LINZ",
+  "dataset_name": "NZ Place Names (NZGB)",
+  "layer_id": "layer-51681",
+  "dataset_version": "20260908",
+  "retrieved_at_utc": "2026-09-08T22:24:37.794169+00:00",
+  "endpoint": "https://data.linz.govt.nz/services;key=REDACTED/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=layer-51681&outputFormat=json&srsName=EPSG%3A4326&count=5000&startIndex=0&sortBy=name_id",
+  "wfs_version": "2.0.0",
+  "srs_name": "EPSG:4326",
+  "sort_by": "name_id",
+  "datum_note": "NZGD2000 treated as WGS84; divergence is sub-metre and immaterial at this scale",
+  "record_count": 49771,
+  "rejected": {
+    "MISSING_REQUIRED_FIELD": 0,
+    "NON_NUMERIC_COORDINATE": 0,
+    "OUTSIDE_BOUNDING_BOXES": 4957,
+    "DUPLICATE_LINZ_ID": 0
+  },
+  "field_mapping": {
+    "linz_id": "name_id",
+    "name": "name",
+    "feature_type": "feat_type",
+    "latitude": "crd_latitude",
+    "longitude": "crd_longitude",
+    "name_status": "status",
+    "feature_id": "feat_id",
+    "coordinate_datum": "crd_datum",
+    "land_district": "land_district",
+    "region": "region",
+    "territorial_authority": "territorial_authority",
+    "accuracy": "accuracy",
+    "accuracy_rating": "accuracy_rating",
+    "geometry_type": "geom_type",
+    "is_maori_name": "maori_name"
+  },
+  "bounding_boxes": {
+    "nz_mainland": {
+      "lat_min": -47.5,
+      "lat_max": -34.0,
+      "lon_min": 166.0,
+      "lon_max": 179.2
+    },
+    "chatham_islands": {
+      "lat_min": -44.5,
+      "lat_max": -43.5,
+      "lon_min": -177.2,
+      "lon_max": -175.7
+    },
+    "offshore_islands": {
+      "lat_min": -52.7,
+      "lat_max": -29.0,
+      "lon_min": 165.5,
+      "lon_max": 179.2
+    }
+  },
+  "snapshot_file": "linz_place_names_20260908.jsonl",
+  "snapshot_sha256": "d135a770782609da7213d9b7bf797b30b10d603320e561f6c9cfd3a8a37ae7c8",
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas": "3.0.5",
+    "numpy": "2.5.3",
+    "openpyxl": "3.1.5",
+    "yaml": "6.0.3"
+  }
+}

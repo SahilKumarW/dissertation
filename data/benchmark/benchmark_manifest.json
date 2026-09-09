@@ -1,8 +1,8 @@
 {
-  "benchmark_version": "nz-dd-v1",
-  "generated_at_utc": "2026-09-08T16:17:32.695404+00:00",
+  "benchmark_version": "nz-dd-v2",
+  "generated_at_utc": "2026-09-09T17:32:11.342942+00:00",
   "policy": {
-    "distance_direction_pattern": "(?:ca\\.?|c\\.?|approx\\.?|approximately|about|~)?\\s*\\d+(?:[\\.,]\\d+)?\\s*(?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\\s*\\.?\\s*(?:north[\\s\\-]?north[\\s\\-]?east|north[\\s\\-]?north[\\s\\-]?west|south[\\s\\-]?south[\\s\\-]?east|south[\\s\\-]?south[\\s\\-]?west|east[\\s\\-]?north[\\s\\-]?east|east[\\s\\-]?south[\\s\\-]?east|west[\\s\\-]?north[\\s\\-]?west|west[\\s\\-]?south[\\s\\-]?west|north[\\s\\-]?east|north[\\s\\-]?west|south[\\s\\-]?east|south[\\s\\-]?west|north|south|east|west|n\\.?n\\.?e|n\\.?n\\.?w|s\\.?s\\.?e|s\\.?s\\.?w|e\\.?n\\.?e|e\\.?s\\.?e|w\\.?n\\.?w|w\\.?s\\.?w|n\\.?e|n\\.?w|s\\.?e|s\\.?w|nth|sth|n|s|e|w)\\b\\.?[\\s\\-]*(?:of|from)\\b",
+    "distance_direction_pattern": "(?:ca\\.?|c\\.?|approx\\.?|approximately|about|~)?\\s*\\d+(?:[\\.,]\\d+)?\\s*(?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\\b\\s*\\.?\\s*(?:north[\\s\\-]?north[\\s\\-]?east|north[\\s\\-]?north[\\s\\-]?west|south[\\s\\-]?south[\\s\\-]?east|south[\\s\\-]?south[\\s\\-]?west|east[\\s\\-]?north[\\s\\-]?east|east[\\s\\-]?south[\\s\\-]?east|west[\\s\\-]?north[\\s\\-]?west|west[\\s\\-]?south[\\s\\-]?west|north[\\s\\-]?east|north[\\s\\-]?west|south[\\s\\-]?east|south[\\s\\-]?west|north|south|east|west|n\\.?n\\.?e|n\\.?n\\.?w|s\\.?s\\.?e|s\\.?s\\.?w|e\\.?n\\.?e|e\\.?s\\.?e|w\\.?n\\.?w|w\\.?s\\.?w|n\\.?e|n\\.?w|s\\.?e|s\\.?w|nth|sth|n|s|e|w)\\b\\.?[\\s\\-]*(?:of|from)\\b",
     "coordinate_equality_decimals": 6,
     "bounding_boxes": {
       "nz_mainland": {
@@ -26,23 +26,29 @@
     "benchmark_size": 75,
     "one_record_per_coordinate": true,
     "random_seed": 20260908,
+    "selection_method": "sha256(seed:key) ordering, stable under pool changes",
+    "dev_ground_truth_size": 100,
+    "dev_random_seed": 20260909,
     "normalisation_version": "normalise-v1"
   },
   "counts": {
     "description_rows_unique": 4020,
-    "distance_direction_candidates": 313,
-    "eligible_after_quality_gate": 292,
+    "distance_direction_candidates": 308,
+    "eligible_after_quality_gate": 287,
     "removed_sharing_a_coordinate": 31,
-    "independent_eligible_records": 261,
+    "independent_eligible_records": 256,
     "rejected_outside_bounding_boxes": 0,
     "benchmark_size": 75,
     "defensible_denominator": 75,
     "dev_pool_size": 3945,
+    "dev_ground_truth_size": 100,
+    "validation_size": 81,
+    "selection_set_size": 175,
     "corpus_rows": 30461,
     "rows_missing_coordinates": 0
   },
   "audit_category_counts": {
-    "SINGLE_ROW_EXACT": 184,
+    "SINGLE_ROW_EXACT": 179,
     "DUPLICATE_ROWS_SAME_COORDINATE": 108,
     "SINGLE_ROW_NORMALIZED": 0,
     "UNRESOLVED_MULTI_COORD": 21,
@@ -50,23 +56,26 @@
     "NO_MATCH": 0
   },
   "artefact_hashes": {
-    "benchmark.csv": "d68abdc7090c2c06e99c1155484a449453268c8e3b5f3de75f61f0f1c478acb3",
-    "ground_truth.csv": "3aa5eea1834fa9aa36efa80a8cda287b26149f29fad226838b66ce8696002620",
-    "dev_pool.csv": "27b78205a99d0ab3b0f2dd810dbd4f8e6e31535c4f1a004f649d9225ec3aa85e"
+    "benchmark.csv": "50d2759cc374350ed278b53b24b5e91e1bf498f56cfc57e01ad47ea2777cb95a",
+    "ground_truth.csv": "4e42f42c718ba41138eeeeb89286dbe8af7b1364a81130841d2ca09927f89a4d",
+    "dev_pool.csv": "a55d68ae63d8f423bab20b74b06f274367431f6461f8023b0a22a1ac6c233620",
+    "dev_ground_truth.csv": "3bb06a95f516cc1457f46d9090acdda03809c906c89586246abb5789611241a3",
+    "validation_ground_truth.csv": "5211f72ab632c14b826ef2cbc9d4d9075c07ff961f3f66647e218f5b91109628",
+    "selection_ground_truth.csv": "d1739a3cfa19912ba61e270a4423d7bb56490fe0b76637d924d8bdc6c21240a6"
   },
   "source_hashes": {
-    "SampleData-NoCoords.xlsx": "1d861cd0b52703e04533b2b29d2e47ac566b6857c14409322ab6fcbe7ecc41bd",
-    "MWLR-Data-CHR-20230307 nz only with coordinates desc 60 or more.csv": "154ab572be5578a7d7fa0e7eeec72ec2919e1545a0c93f54ad64b9d4e476470d"
+    "SampleDataNoCoords.xlsx": "1d861cd0b52703e04533b2b29d2e47ac566b6857c14409322ab6fcbe7ecc41bd",
+    "MWLRDataCHR20230307_nz_only_with_coordinates_desc_60_or_more.csv": "154ab572be5578a7d7fa0e7eeec72ec2919e1545a0c93f54ad64b9d4e476470d"
   },
   "code_hashes": {
-    "benchmark_builder.py": "3c57cf9fe803b6b489a22d3ee4fc1a56681b2299035b0d75612e1d4a9d292fbb",
-    "normalise.py": "83e6fce4729abf8d6ca7b93cdb7181841f9b9f11778216265b6a3da893d791c1"
+    "benchmark_builder.py": "d081ba6c5a6d8ee41f5535fff071665ae0bea48d00b398646bb9304b43af413c",
+    "normalise.py": "595f1ea81782c2ab04ab5c3e379609007bbb6a9a3851fc8a1fe8a92627bf7c4f"
   },
   "environment": {
-    "python": "3.13.5",
-    "platform": "Windows-11-10.0.26200-SP0",
-    "pandas": "3.0.5",
-    "numpy": "2.5.3",
+    "python": "3.12.3",
+    "platform": "Linux-6.18.44-fc-v24-x86_64-with-glibc2.39",
+    "pandas": "3.0.2",
+    "numpy": "2.4.4",
     "openpyxl": "3.1.5",
     "yaml": "6.0.3"
   },

@@ -1,8 +1,8 @@
 {
-  "benchmark_version": "nz-dd-v1",
-  "generated_at_utc": "2026-09-08T16:17:32.672645+00:00",
+  "benchmark_version": "nz-dd-v2",
+  "generated_at_utc": "2026-09-09T17:32:11.342558+00:00",
   "audit_category_counts": {
-    "SINGLE_ROW_EXACT": 184,
+    "SINGLE_ROW_EXACT": 179,
     "DUPLICATE_ROWS_SAME_COORDINATE": 108,
     "SINGLE_ROW_NORMALIZED": 0,
     "UNRESOLVED_MULTI_COORD": 21,
@@ -11,14 +11,17 @@
   },
   "counts": {
     "description_rows_unique": 4020,
-    "distance_direction_candidates": 313,
-    "eligible_after_quality_gate": 292,
+    "distance_direction_candidates": 308,
+    "eligible_after_quality_gate": 287,
     "removed_sharing_a_coordinate": 31,
-    "independent_eligible_records": 261,
+    "independent_eligible_records": 256,
     "rejected_outside_bounding_boxes": 0,
     "benchmark_size": 75,
     "defensible_denominator": 75,
     "dev_pool_size": 3945,
+    "dev_ground_truth_size": 100,
+    "validation_size": 81,
+    "selection_set_size": 175,
     "corpus_rows": 30461,
     "rows_missing_coordinates": 0
   },
@@ -28,8 +31,8 @@
     "SINGLE_ROW_NORMALIZED"
   ],
   "selected_category_counts": {
-    "DUPLICATE_ROWS_SAME_COORDINATE": 28,
-    "SINGLE_ROW_EXACT": 47,
+    "DUPLICATE_ROWS_SAME_COORDINATE": 23,
+    "SINGLE_ROW_EXACT": 52,
     "SINGLE_ROW_NORMALIZED": 0
   },
   "note": "Every description in SampleDataNoCoords.xlsx is drawn from the coordinate corpus, so NO_MATCH is expected to be zero. It remains an explicit category so that a future corpus change is visible."
