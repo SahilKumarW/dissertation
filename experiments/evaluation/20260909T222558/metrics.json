@@ -1,0 +1,130 @@
+{
+  "evaluation_id": "20260909T222558",
+  "evaluated_at_utc": "2026-09-09T22:25:58.284788+00:00",
+  "baseline_run": "20260909T221535-9f7d5b08",
+  "hybrid_run": "20260909T221751-1552d9a1",
+  "denominators": {
+    "benchmark_records": 81,
+    "both_conditions_predicted": 54,
+    "only_condition_a_predicted": 27,
+    "only_condition_b_predicted": 0,
+    "neither_predicted": 0
+  },
+  "condition_a_all_records": {
+    "denominator_all_records": 81,
+    "denominator_evaluated_predictions": 81,
+    "predicted": 81,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 81
+    },
+    "mean_error_km": 9.157,
+    "median_error_km": 2.933,
+    "std_error_km": 20.655,
+    "min_error_km": 0.002,
+    "max_error_km": 149.716,
+    "p25_error_km": 1.618,
+    "p75_error_km": 7.897,
+    "p90_error_km": 18.288,
+    "p95_error_km": 27.867,
+    "within_1km": 0.1481,
+    "within_5km": 0.6296,
+    "within_10km": 0.8148,
+    "over_50km": 0.037
+  },
+  "condition_b_all_records": {
+    "denominator_all_records": 81,
+    "denominator_evaluated_predictions": 54,
+    "predicted": 54,
+    "abstained": 27,
+    "coverage": 0.6667,
+    "status_counts": {
+      "SUCCESS": 54,
+      "GROUNDING_FAILURE": 26,
+      "CLAUSE_DISAGREEMENT": 1
+    },
+    "mean_error_km": 9.296,
+    "median_error_km": 2.354,
+    "std_error_km": 17.92,
+    "min_error_km": 0.07,
+    "max_error_km": 90.232,
+    "p25_error_km": 0.883,
+    "p75_error_km": 8.655,
+    "p90_error_km": 22.784,
+    "p95_error_km": 38.498,
+    "within_1km": 0.2593,
+    "within_5km": 0.6481,
+    "within_10km": 0.7593,
+    "over_50km": 0.037
+  },
+  "condition_a_paired_subset": {
+    "denominator_all_records": 54,
+    "denominator_evaluated_predictions": 54,
+    "predicted": 54,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 54
+    },
+    "mean_error_km": 6.657,
+    "median_error_km": 2.584,
+    "std_error_km": 13.203,
+    "min_error_km": 0.002,
+    "max_error_km": 90.276,
+    "p25_error_km": 1.582,
+    "p75_error_km": 6.661,
+    "p90_error_km": 10.967,
+    "p95_error_km": 18.769,
+    "within_1km": 0.1296,
+    "within_5km": 0.6852,
+    "within_10km": 0.8519,
+    "over_50km": 0.0185
+  },
+  "condition_b_paired_subset": {
+    "denominator_all_records": 54,
+    "denominator_evaluated_predictions": 54,
+    "predicted": 54,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 54
+    },
+    "mean_error_km": 9.296,
+    "median_error_km": 2.354,
+    "std_error_km": 17.92,
+    "min_error_km": 0.07,
+    "max_error_km": 90.232,
+    "p25_error_km": 0.883,
+    "p75_error_km": 8.655,
+    "p90_error_km": 22.784,
+    "p95_error_km": 38.498,
+    "within_1km": 0.2593,
+    "within_5km": 0.6481,
+    "within_10km": 0.7593,
+    "over_50km": 0.037
+  },
+  "condition_a_on_records_b_declined": {
+    "denominator_all_records": 27,
+    "denominator_evaluated_predictions": 27,
+    "predicted": 27,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 27
+    },
+    "mean_error_km": 14.158,
+    "median_error_km": 4.129,
+    "std_error_km": 29.896,
+    "min_error_km": 0.119,
+    "max_error_km": 149.716,
+    "p25_error_km": 2.54,
+    "p75_error_km": 9.751,
+    "p90_error_km": 23.949,
+    "p95_error_km": 56.957,
+    "within_1km": 0.1852,
+    "within_5km": 0.5185,
+    "within_10km": 0.7407,
+    "over_50km": 0.0741
+  }
+}

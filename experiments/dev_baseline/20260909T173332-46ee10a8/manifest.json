@@ -1,0 +1,29 @@
+{
+  "run_id": "20260909T173332-46ee10a8",
+  "condition": "A",
+  "dataset": "dev",
+  "benchmark_size": 100,
+  "records_written": 100,
+  "status_counts": {
+    "SUCCESS": 100
+  },
+  "started_at_utc": "2026-09-09T17:33:35.352878+00:00",
+  "finished_at_utc": "2026-09-09T17:36:44.195815+00:00",
+  "llm": {
+    "provider": "gemini",
+    "model": "gemini-3.8-flash",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_tokens": 32768,
+    "reasoning_effort": "medium",
+    "record_served_model": true,
+    "profile": "gemini_flash"
+  },
+  "served_models": [
+    "gemini-3.8-flash"
+  ],
+  "freeze_sha256": "8aaf8c885d45a0c7a8b08700242cf71ee039a0a6b65e0431fd9375d278cd4511",
+  "allow_unfrozen": false,
+  "is_pilot": false,
+  "configuration": {}
+}

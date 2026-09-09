@@ -1,0 +1,279 @@
+{
+  "label": "POST-BENCHMARK EXPLORATORY -- not a frozen result",
+  "evaluation_id": "20260909T174613",
+  "dataset": "dev",
+  "baseline_run": "20260909T173332-46ee10a8",
+  "hybrid_run": "20260909T174217-60150868",
+  "parameters": {
+    "agreement_km": 10.0,
+    "minimum_score": 0.6
+  },
+  "condition_a": {
+    "denominator_all_records": 100,
+    "denominator_evaluated_predictions": 100,
+    "predicted": 100,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 100
+    },
+    "mean_error_km": 11.229,
+    "median_error_km": 2.859,
+    "std_error_km": 56.228,
+    "min_error_km": 0.182,
+    "max_error_km": 557.345,
+    "p25_error_km": 1.045,
+    "p75_error_km": 6.224,
+    "p90_error_km": 10.693,
+    "p95_error_km": 17.658,
+    "within_1km": 0.23,
+    "within_5km": 0.69,
+    "within_10km": 0.89,
+    "over_50km": 0.03
+  },
+  "condition_b": {
+    "denominator_all_records": 100,
+    "denominator_evaluated_predictions": 74,
+    "predicted": 74,
+    "abstained": 26,
+    "coverage": 0.74,
+    "status_counts": {
+      "SUCCESS": 74,
+      "GROUNDING_FAILURE": 26
+    },
+    "mean_error_km": 9.543,
+    "median_error_km": 3.056,
+    "std_error_km": 18.165,
+    "min_error_km": 0.055,
+    "max_error_km": 106.128,
+    "p25_error_km": 0.831,
+    "p75_error_km": 9.617,
+    "p90_error_km": 27.183,
+    "p95_error_km": 37.384,
+    "within_1km": 0.3243,
+    "within_5km": 0.6622,
+    "within_10km": 0.7432,
+    "over_50km": 0.0405
+  },
+  "strategies": {
+    "fallback": {
+      "summary": {
+        "denominator_all_records": 100,
+        "denominator_evaluated_predictions": 100,
+        "predicted": 100,
+        "abstained": 0,
+        "coverage": 1.0,
+        "status_counts": {
+          "SUCCESS": 100
+        },
+        "mean_error_km": 14.47,
+        "median_error_km": 3.041,
+        "std_error_km": 57.604,
+        "min_error_km": 0.055,
+        "max_error_km": 557.345,
+        "p25_error_km": 0.839,
+        "p75_error_km": 8.133,
+        "p90_error_km": 23.195,
+        "p95_error_km": 45.304,
+        "within_1km": 0.31,
+        "within_5km": 0.67,
+        "within_10km": 0.79,
+        "over_50km": 0.05
+      },
+      "sources_used": {
+        "B": 74,
+        "A": 26
+      },
+      "vs_baseline_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 1169.0,
+        "p_value": 0.240228,
+        "n_used": 74,
+        "n_zero_differences_dropped": 26,
+        "median_difference_km": 0.0,
+        "effect_size_r": 0.1368,
+        "method": "normal approximation with continuity correction"
+      },
+      "vs_baseline_mcnemar_1km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 4,
+        "a_failure_b_success": 12,
+        "discordant_pairs": 16,
+        "n_pairs": 100,
+        "p_value": 0.076813,
+        "method": "exact binomial"
+      },
+      "denominators": {
+        "benchmark_records": 100,
+        "both_conditions_predicted": 100,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 0,
+        "neither_predicted": 0
+      }
+    },
+    "confidence": {
+      "summary": {
+        "denominator_all_records": 100,
+        "denominator_evaluated_predictions": 100,
+        "predicted": 100,
+        "abstained": 0,
+        "coverage": 1.0,
+        "status_counts": {
+          "SUCCESS": 100
+        },
+        "mean_error_km": 13.899,
+        "median_error_km": 3.089,
+        "std_error_km": 57.486,
+        "min_error_km": 0.055,
+        "max_error_km": 557.345,
+        "p25_error_km": 0.909,
+        "p75_error_km": 7.747,
+        "p90_error_km": 17.3,
+        "p95_error_km": 35.302,
+        "within_1km": 0.29,
+        "within_5km": 0.65,
+        "within_10km": 0.82,
+        "over_50km": 0.05
+      },
+      "sources_used": {
+        "B": 56,
+        "A": 44
+      },
+      "vs_baseline_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 669.0,
+        "p_value": 0.294553,
+        "n_used": 56,
+        "n_zero_differences_dropped": 44,
+        "median_difference_km": 0.0,
+        "effect_size_r": 0.1406,
+        "method": "normal approximation with continuity correction"
+      },
+      "vs_baseline_mcnemar_1km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 4,
+        "a_failure_b_success": 10,
+        "discordant_pairs": 14,
+        "n_pairs": 100,
+        "p_value": 0.179565,
+        "method": "exact binomial"
+      },
+      "denominators": {
+        "benchmark_records": 100,
+        "both_conditions_predicted": 100,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 0,
+        "neither_predicted": 0
+      }
+    },
+    "agreement": {
+      "summary": {
+        "denominator_all_records": 100,
+        "denominator_evaluated_predictions": 100,
+        "predicted": 100,
+        "abstained": 0,
+        "coverage": 1.0,
+        "status_counts": {
+          "SUCCESS": 100
+        },
+        "mean_error_km": 11.119,
+        "median_error_km": 2.736,
+        "std_error_km": 56.278,
+        "min_error_km": 0.055,
+        "max_error_km": 557.345,
+        "p25_error_km": 0.897,
+        "p75_error_km": 5.453,
+        "p90_error_km": 11.791,
+        "p95_error_km": 18.453,
+        "within_1km": 0.31,
+        "within_5km": 0.73,
+        "within_10km": 0.87,
+        "over_50km": 0.03
+      },
+      "sources_used": {
+        "B": 60,
+        "A": 40
+      },
+      "vs_baseline_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 857.0,
+        "p_value": 0.672082,
+        "n_used": 60,
+        "n_zero_differences_dropped": 40,
+        "median_difference_km": 0.0,
+        "effect_size_r": 0.0551,
+        "method": "normal approximation with continuity correction"
+      },
+      "vs_baseline_mcnemar_1km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 2,
+        "a_failure_b_success": 10,
+        "discordant_pairs": 12,
+        "n_pairs": 100,
+        "p_value": 0.038574,
+        "method": "exact binomial"
+      },
+      "denominators": {
+        "benchmark_records": 100,
+        "both_conditions_predicted": 100,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 0,
+        "neither_predicted": 0
+      }
+    },
+    "prefer_baseline": {
+      "summary": {
+        "denominator_all_records": 100,
+        "denominator_evaluated_predictions": 100,
+        "predicted": 100,
+        "abstained": 0,
+        "coverage": 1.0,
+        "status_counts": {
+          "SUCCESS": 100
+        },
+        "mean_error_km": 11.229,
+        "median_error_km": 2.859,
+        "std_error_km": 56.228,
+        "min_error_km": 0.182,
+        "max_error_km": 557.345,
+        "p25_error_km": 1.045,
+        "p75_error_km": 6.224,
+        "p90_error_km": 10.693,
+        "p95_error_km": 17.658,
+        "within_1km": 0.23,
+        "within_5km": 0.69,
+        "within_10km": 0.89,
+        "over_50km": 0.03
+      },
+      "sources_used": {
+        "A": 100
+      },
+      "vs_baseline_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 0.0,
+        "p_value": 1.0,
+        "n_used": 0,
+        "n_zero_differences_dropped": 100,
+        "median_difference_km": 0.0,
+        "effect_size_r": null,
+        "method": "no non-zero differences"
+      },
+      "vs_baseline_mcnemar_1km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 0,
+        "a_failure_b_success": 0,
+        "discordant_pairs": 0,
+        "n_pairs": 100,
+        "p_value": 1.0,
+        "method": "no discordant pairs"
+      },
+      "denominators": {
+        "benchmark_records": 100,
+        "both_conditions_predicted": 100,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 0,
+        "neither_predicted": 0
+      }
+    }
+  }
+}

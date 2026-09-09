@@ -1,0 +1,40 @@
+{
+  "run_id": "20260909T221751-1552d9a1",
+  "condition": "B",
+  "dataset": "validation",
+  "benchmark_size": 81,
+  "records_written": 81,
+  "status_counts": {
+    "SUCCESS": 54,
+    "GROUNDING_FAILURE": 26,
+    "CLAUSE_DISAGREEMENT": 1
+  },
+  "started_at_utc": "2026-09-09T22:19:09.057893+00:00",
+  "finished_at_utc": "2026-09-09T22:20:08.971988+00:00",
+  "llm": {
+    "provider": "gemini",
+    "model": "gemini-3.8-flash",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_tokens": 32768,
+    "reasoning_effort": "medium",
+    "record_served_model": true,
+    "profile": "gemini_flash"
+  },
+  "served_models": [],
+  "freeze_sha256": "0f97cf091a529cf6e2520ecab6f41c4cd3df790b7a7ae386b8bed123e3db8706",
+  "allow_unfrozen": false,
+  "is_pilot": false,
+  "configuration": {
+    "snapshot": "linz_place_names_20260908.jsonl",
+    "gazetteer_records": 49771,
+    "channels": [
+      "exact_name",
+      "folded_name",
+      "bm25",
+      "dense"
+    ],
+    "multi_anchor_policy": "fuse",
+    "minimum_score": 0.45
+  }
+}

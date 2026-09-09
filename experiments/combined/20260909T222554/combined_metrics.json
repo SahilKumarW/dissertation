@@ -1,0 +1,145 @@
+{
+  "label": "POST-BENCHMARK EXPLORATORY -- not a frozen result",
+  "evaluation_id": "20260909T222554",
+  "dataset": "validation",
+  "baseline_run": "20260909T221535-9f7d5b08",
+  "hybrid_run": "20260909T221751-1552d9a1",
+  "parameters": {
+    "agreement_km": 25.0,
+    "minimum_score": 0.6
+  },
+  "condition_a": {
+    "denominator_all_records": 81,
+    "denominator_evaluated_predictions": 81,
+    "predicted": 81,
+    "abstained": 0,
+    "coverage": 1.0,
+    "status_counts": {
+      "SUCCESS": 81
+    },
+    "mean_error_km": 9.157,
+    "median_error_km": 2.933,
+    "std_error_km": 20.655,
+    "min_error_km": 0.002,
+    "max_error_km": 149.716,
+    "p25_error_km": 1.618,
+    "p75_error_km": 7.897,
+    "p90_error_km": 18.288,
+    "p95_error_km": 27.867,
+    "within_1km": 0.1481,
+    "within_5km": 0.6296,
+    "within_10km": 0.8148,
+    "over_50km": 0.037
+  },
+  "condition_b": {
+    "denominator_all_records": 81,
+    "denominator_evaluated_predictions": 54,
+    "predicted": 54,
+    "abstained": 27,
+    "coverage": 0.6667,
+    "status_counts": {
+      "SUCCESS": 54,
+      "GROUNDING_FAILURE": 26,
+      "CLAUSE_DISAGREEMENT": 1
+    },
+    "mean_error_km": 9.296,
+    "median_error_km": 2.354,
+    "std_error_km": 17.92,
+    "min_error_km": 0.07,
+    "max_error_km": 90.232,
+    "p25_error_km": 0.883,
+    "p75_error_km": 8.655,
+    "p90_error_km": 22.784,
+    "p95_error_km": 38.498,
+    "within_1km": 0.2593,
+    "within_5km": 0.6481,
+    "within_10km": 0.7593,
+    "over_50km": 0.037
+  },
+  "strategies": {
+    "agreement": {
+      "strategy": "agreement",
+      "agreement_km": 25.0,
+      "minimum_score": 0.6,
+      "summary": {
+        "denominator_all_records": 81,
+        "denominator_evaluated_predictions": 81,
+        "predicted": 81,
+        "abstained": 0,
+        "coverage": 1.0,
+        "status_counts": {
+          "SUCCESS": 81
+        },
+        "mean_error_km": 9.179,
+        "median_error_km": 3.267,
+        "std_error_km": 20.779,
+        "min_error_km": 0.07,
+        "max_error_km": 149.716,
+        "p25_error_km": 1.087,
+        "p75_error_km": 7.817,
+        "p90_error_km": 17.239,
+        "p95_error_km": 27.867,
+        "within_1km": 0.2469,
+        "within_5km": 0.6173,
+        "within_10km": 0.7901,
+        "over_50km": 0.037
+      },
+      "sources_used": {
+        "B": 51,
+        "A": 30
+      },
+      "vs_baseline_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 658.0,
+        "p_value": 0.966355,
+        "n_used": 51,
+        "n_zero_differences_dropped": 30,
+        "median_difference_km": 0.0,
+        "effect_size_r": 0.0066,
+        "method": "normal approximation with continuity correction"
+      },
+      "vs_baseline_mcnemar_1km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 4,
+        "a_failure_b_success": 12,
+        "discordant_pairs": 16,
+        "n_pairs": 81,
+        "p_value": 0.076813,
+        "method": "exact binomial"
+      },
+      "vs_hybrid_wilcoxon": {
+        "test": "Wilcoxon signed-rank (paired, two-sided)",
+        "statistic_W": 0,
+        "p_value": 0.25,
+        "n_used": 3,
+        "n_zero_differences_dropped": 51,
+        "median_difference_km": 0.0,
+        "effect_size_r": 0.9258,
+        "method": "exact permutation over 2^3 sign assignments"
+      },
+      "vs_hybrid_mcnemar_over_50km": {
+        "test": "McNemar (exact binomial, two-sided)",
+        "a_success_b_failure": 1,
+        "a_failure_b_success": 0,
+        "discordant_pairs": 1,
+        "n_pairs": 54,
+        "p_value": 1.0,
+        "method": "exact binomial"
+      },
+      "vs_hybrid_denominators": {
+        "benchmark_records": 81,
+        "both_conditions_predicted": 54,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 27,
+        "neither_predicted": 0
+      },
+      "denominators": {
+        "benchmark_records": 81,
+        "both_conditions_predicted": 81,
+        "only_condition_a_predicted": 0,
+        "only_condition_b_predicted": 0,
+        "neither_predicted": 0
+      }
+    }
+  }
+}

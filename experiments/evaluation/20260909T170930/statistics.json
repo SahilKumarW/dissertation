@@ -1,0 +1,58 @@
+{
+  "note": "Paired tests run over records where BOTH conditions produced a coordinate. That denominator is smaller than the benchmark and is stated above; comparing summary statistics computed over different denominators would not be a paired comparison.",
+  "denominators": {
+    "benchmark_records": 75,
+    "both_conditions_predicted": 60,
+    "only_condition_a_predicted": 15,
+    "only_condition_b_predicted": 0,
+    "neither_predicted": 0
+  },
+  "wilcoxon_signed_rank": {
+    "test": "Wilcoxon signed-rank (paired, two-sided)",
+    "statistic_W": 876.0,
+    "p_value": 0.776854,
+    "n_used": 60,
+    "n_zero_differences_dropped": 0,
+    "median_difference_km": 0.054,
+    "effect_size_r": 0.0371,
+    "method": "normal approximation with continuity correction"
+  },
+  "mcnemar_by_threshold": {
+    "within_1km": {
+      "test": "McNemar (exact binomial, two-sided)",
+      "a_success_b_failure": 4,
+      "a_failure_b_success": 14,
+      "discordant_pairs": 18,
+      "n_pairs": 60,
+      "p_value": 0.030884,
+      "method": "exact binomial"
+    },
+    "within_5km": {
+      "test": "McNemar (exact binomial, two-sided)",
+      "a_success_b_failure": 10,
+      "a_failure_b_success": 10,
+      "discordant_pairs": 20,
+      "n_pairs": 60,
+      "p_value": 1.0,
+      "method": "exact binomial"
+    },
+    "within_10km": {
+      "test": "McNemar (exact binomial, two-sided)",
+      "a_success_b_failure": 8,
+      "a_failure_b_success": 5,
+      "discordant_pairs": 13,
+      "n_pairs": 60,
+      "p_value": 0.581055,
+      "method": "exact binomial"
+    },
+    "within_50km": {
+      "test": "McNemar (exact binomial, two-sided)",
+      "a_success_b_failure": 2,
+      "a_failure_b_success": 0,
+      "discordant_pairs": 2,
+      "n_pairs": 60,
+      "p_value": 0.5,
+      "method": "exact binomial"
+    }
+  }
+}

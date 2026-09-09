@@ -1,0 +1,38 @@
+{
+  "run_id": "20260909T170602-e3106dae",
+  "condition": "B",
+  "benchmark_size": 75,
+  "records_written": 75,
+  "status_counts": {
+    "SUCCESS": 60,
+    "GROUNDING_FAILURE": 15
+  },
+  "started_at_utc": "2026-09-09T17:07:18.821629+00:00",
+  "finished_at_utc": "2026-09-09T17:08:25.049764+00:00",
+  "llm": {
+    "provider": "gemini",
+    "model": "gemini-3.8-flash",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_tokens": 32768,
+    "reasoning_effort": "medium",
+    "record_served_model": true,
+    "profile": "gemini_flash"
+  },
+  "served_models": [],
+  "freeze_sha256": "562bede96e53918767c7c21a50ba6fb6b0ac9200f6466678ce2f38ee15a11bc5",
+  "allow_unfrozen": false,
+  "is_pilot": false,
+  "configuration": {
+    "snapshot": "linz_place_names_20260908.jsonl",
+    "gazetteer_records": 49771,
+    "channels": [
+      "exact_name",
+      "folded_name",
+      "bm25",
+      "dense"
+    ],
+    "multi_anchor_policy": "fuse",
+    "minimum_score": 0.45
+  }
+}
