@@ -1,0 +1,52 @@
+# Condition C operating rule.
+#
+# Pre-registered in docs/CONDITION_C_PREREGISTRATION.md. The strategy and its
+# parameter are SELECTED ON THE DEV SET, once, before the validation set is
+# read, and frozen thereafter.
+#
+# Until that selection is made, `strategy` is null and the combination script
+# refuses to run against the validation set. That is deliberate: an unset rule
+# should stop the run rather than quietly default to something.
+
+# SELECTED on the pooled selection set (dev 100 + benchmark 75 = 175 records),
+# by the pre-registered criterion in docs/CONDITION_C_PREREGISTRATION.md
+# section 4: lowest median paired geodesic error, ties broken toward the lower
+# proportion of errors over 50 km.
+#
+# Ranking over the registered grids, median km / >50 km:
+#     agreement@25   2.627  0.023   <-- selected
+#     agreement@50   2.737  0.023
+#     agreement@10   2.775  0.023
+#     confidence@0.65 2.864 0.029
+#     fallback       2.864  0.046
+#     control        2.877  0.023
+#
+# agreement@25km has the lowest median and ties the control on catastrophic
+# errors, while fallback and confidence at low thresholds double the >50 km rate
+# -- the hybrid's tail arriving with its precision. Requiring the two conditions
+# to corroborate each other is what separates the two.
+strategy: agreement
+agreement_km: 25
+minimum_score: null     # unused by the selected strategy
+
+selected_on:
+  pooled_records: 175
+  dev_baseline_run: 20260909T173332-46ee10a8
+  dev_hybrid_run: 20260909T174217-60150868
+  benchmark_baseline_run: 20260909T170347-2863c560
+  benchmark_hybrid_run: 20260909T170602-e3106dae
+  sweep_output: experiments/combined/20260909T220536
+selection_criterion: >-
+  lowest median paired geodesic error against Condition A on the development
+  set; ties broken toward the lower proportion of errors over 50 km, then
+  toward `agreement`
+
+# The control. Never a candidate: it exists so that a rule failing to beat it is
+# recognised as having achieved nothing.
+control_strategy: prefer_baseline
+
+# Grids searched during selection. Fixed here so the search space cannot grow
+# after the fact.
+parameter_grids:
+  agreement_km: [2, 5, 10, 25, 50]
+  minimum_score: [0.45, 0.55, 0.65, 0.75]

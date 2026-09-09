@@ -1,0 +1,171 @@
+# Candidate disambiguation policy (master spec section 20).
+#
+# FIXED PRE-BENCHMARK ENGINEERING POLICY. These weights were chosen by
+# judgement about what constitutes evidence, not fitted to any data. They are
+# NOT claimed to be optimal, and they are never tuned against the 75-row
+# benchmark. If they are compared at all, it is on the dev set, once, before
+# the freeze.
+#
+# Each feature contributes a value in [0, 1], multiplied by its weight. The
+# total is normalised by the sum of weights, so the final score is in [0, 1]
+# and adding a feature later does not silently rescale the abstention
+# thresholds.
+
+weights:
+  # Strongest available evidence: the anchor string IS the gazetteer name.
+  exact_name: 1.0
+
+  # Same, ignoring macrons. Slightly lower because folding is lossy: it cannot
+  # distinguish two names differing only by a macron.
+  folded_name: 0.9
+
+  # The anchor matched only after stripping brackets or qualifiers.
+  variant_name: 0.6
+
+  # Graded overlap of DISTINCTIVE name tokens, generic words excluded. Carries
+  # real weight because it is the difference between a partial match ("Te
+  # Pukaha" for "Te Pukaha Trig") and a coincidence ("Mount Guinevere" for
+  # "Mount Benoit"), and without it a candidate sharing only the generic word
+  # could clear the minimum on feature type and status alone.
+  name_similarity: 0.8
+
+  # Where the retrieval stack ranked it, fused across channels. Deliberately
+  # weak: master spec section 19 is explicit that similarity alone is
+  # insufficient for authoritative geographic selection, and this resolver
+  # exists precisely because retrieval order is not evidence about which
+  # Stockton a collector meant. It corroborates; it does not decide.
+  retrieval_rank: 0.25
+
+  # Cross-encoder agreement, when reranking is enabled.
+  rerank: 0.4
+
+  # "Porarari River" should prefer a Stream over a Locality of the same name.
+  feature_type: 0.7
+
+  # Land district or territorial authority agreeing with the stated context.
+  # Below name evidence -- letting it override an exact name match would be the
+  # tail wagging the dog -- but above the settlement prior, because a region
+  # the description actually states is direct evidence while the prior is only
+  # a generalisation about how place names are used. Raised from 0.5 when the
+  # two were found to be nearly balanced, leaving the resolver abstaining on
+  # cases where stated context should decide.
+  region: 0.6
+
+  # Agreement with the OTHER places the description names. A description that
+  # says "Nelson, Little Totara River ... below Costello Hill" is pinned to the
+  # north-west of the South Island by three separate names, so a candidate in
+  # Southland is wrong however well it matches on name. This is the strongest
+  # signal available when the anchor itself has no exact match, which is exactly
+  # the situation in which the resolver went 500 km astray on the dev set.
+  spatial_coherence: 0.9
+
+  # A true point is better positional evidence than the representative point of
+  # a 40 km river.
+  geometry_type: 0.2
+
+  # Officially gazetted names are more likely to be what a collector meant.
+  name_status: 0.15
+
+# Rank decay, k / (k + rank). Gentle, and independent of how many candidates
+# retrieval happened to return -- a score that changed with list length would
+# make the same candidate look better in a short list than a long one.
+retrieval_rank_decay_k: 10
+
+feature_scores:
+  # Candidate feature type matches a generic term in the anchor.
+  feature_type_match: 1.0
+  # When the anchor carries NO generic term -- "8 km South of Pukenui" -- the
+  # candidate's own type still carries information. A collector measuring an
+  # offset from a bare place name almost always means the settlement, not a
+  # hill that happens to share the name. Without this the two are scored
+  # identically and retrieval order decides, which put the wrong Pukenui 203 km
+  # from the truth on the dev set.
+  #
+  # A soft preference, not a filter: a hill can still win on name, region or
+  # rank. It is a general rule about place-name reference, not a list of
+  # specific entities (master spec section 22).
+  feature_type_settlement_prior: 1.0
+  feature_type_absent: 0.5      # anchor implies no type, candidate is not a settlement
+  feature_type_mismatch: 0.0
+
+  region_match: 1.0
+  region_absent: 0.5            # no context stated; neutral
+  region_mismatch: 0.1          # contradicted, but not impossible
+
+  # Full credit within near_km of another place the description names, no
+  # credit beyond far_km, linear between. Neutral when the description names
+  # nothing else, so a bare description is not penalised.
+  coherence_near_km: 50
+  coherence_far_km: 200
+  coherence_absent: 0.5
+
+  # A context name whose gazetteer records span more than this is ambiguous and
+  # is discarded rather than used. Measured, not guessed: without it, coherence
+  # made results worse than no coherence at all.
+  coherence_context_ambiguity_km: 25
+
+  geometry_point: 1.0
+  geometry_polygon: 0.6
+  geometry_line: 0.3
+
+  status_official: 1.0
+  status_unofficial: 0.6
+
+abstention:
+  # Below this, the best candidate is not good enough to ground anything.
+  #
+  # SELECTED ON THE DEV SET, once, before the freeze -- which is what the dev
+  # set is declared for. Measured over 100 dev records, with spatial coherence
+  # enabled:
+  #
+  #     0.35  coverage 81  mean 19.25 km  median 3.10  >50 km: 5
+  #     0.40  coverage 80  mean 19.36 km  median 3.10  >50 km: 5
+  #     0.45  coverage 74  mean  9.46 km  median 3.07  >50 km: 3
+  #     0.50  coverage 72  mean  9.55 km  median 3.07  >50 km: 3
+  #
+  # 0.45 is where selections stop being reliable: the records it excludes
+  # average around 140 km of error. Beyond it, coverage falls with no further
+  # accuracy gain.
+  #
+  # This is a fitted value, and it is fitted to 100 records. It is a frozen
+  # parameter recorded in the run manifest, not a law about georeferencing, and
+  # the sensitivity above is reported so a reader can see how sharp the cliff
+  # is.
+  minimum_score: 0.45
+
+  # Two candidates this close are not distinguishable on the evidence
+  # available, and forcing a choice would be a coin flip recorded as a
+  # prediction (master spec section 24).
+  #
+  # Calibrated against what a single feature actually contributes. Weights sum
+  # to about 4.65, so a lone geometry-type difference moves the normalised
+  # score by roughly 0.03 and a lone name-status difference by roughly 0.013.
+  # At 0.05 the margin swallowed both and the resolver abstained whenever the
+  # only evidence was one weak feature, which made those features inert. At
+  # 0.02 a real difference in feature type, region or geometry decides, while
+  # two candidates identical on every feature except retrieval order still
+  # abstain -- which is the case the margin exists for.
+  minimum_margin: 0.02
+
+  # A gazetteer holds the same place more than once -- Akaroa is both a
+  # Locality and a Town, a few hundred metres apart. Two tied candidates this
+  # close describe the same location, so the choice between them does not
+  # change the prediction and abstaining answers a question that does not
+  # matter. Set at roughly the benchmark's own positional error floor.
+  spatial_agreement_metres: 2000
+
+  # An anchor naming no specific place ("the bridge across the stream") cannot
+  # be resolved against a gazetteer of proper names. Attempting it produces a
+  # confident wrong coordinate.
+  abstain_on_generic_anchor: true
+
+# Types treated as populated places for the prior above.
+settlement_feature_types:
+  - Locality
+  - Town
+  - Suburb
+  - Village
+  - City
+  - Settlement
+
+candidates_considered: 10

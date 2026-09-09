@@ -1,0 +1,49 @@
+# External service endpoints. No secrets here; keys come from the environment.
+
+nvidia:
+  # OpenAI-compatible endpoint, driven through the official openai SDK.
+  base_url: https://integrate.api.nvidia.com/v1
+  api_key_env: NVIDIA_API_KEY
+  timeout_seconds: 240
+  # Records are independent, so workers change wall-clock time and nothing else
+  # about the result.
+  #
+  # Measured on the 100-record dev set:
+  #   4 workers -- 0 retries, ~22 s mean, ~9 min total
+  #   8 workers -- 45 of 83 successes needed a retry, 17 records lost to
+  #                dropped connections, ~27 min total
+  #
+  # Eight is past what this endpoint will carry: the extra concurrency buys
+  # queueing and connection resets, not throughput. Four is the default for
+  # that reason, not caution.
+  max_workers: 4
+
+  retry_policy:
+    # Six rather than four: the observed failure mode is a dropped connection
+    # under concurrency, which is transient, and a lost record costs an entire
+    # description while a retry costs seconds.
+    max_retries: 6
+    backoff_factor: 2
+    # Without jitter, N workers throttled at the same moment retry in lockstep
+    # and throttle each other again.
+    jitter_seconds: 2.0
+    # 429 is expected on a free tier and is retried. 400 and 422 are request
+    # faults and are not, so a malformed prompt fails loudly instead of
+    # burning quota.
+    retry_on_status: [408, 409, 429, 500, 502, 503, 504]
+
+google:
+  api_key_env: GOOGLE_MAPS_API_KEY
+  timeout_seconds: 30
+
+gemini:
+  # Google's OpenAI-compatible surface, driven through the same openai SDK.
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+  api_key_env: GEMINI_API_KEY
+  timeout_seconds: 240
+  max_workers: 4
+  retry_policy:
+    max_retries: 6
+    backoff_factor: 2
+    retry_on_status: [408, 409, 429, 500, 502, 503, 504]
+    jitter_seconds: 2.0

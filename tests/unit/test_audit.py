@@ -10,6 +10,8 @@ from georef.data.benchmark_builder import (
     audit_description,
     compile_pattern,
 )
+import pytest
+
 from georef.config.loader import load_benchmark_config
 from georef.normalise import normalise
 
@@ -87,3 +89,39 @@ class TestEligibilityPattern:
             "extending along at least 1 km of coastline",
         ]:
             assert not self.pattern.search(text), text
+
+
+class TestEligibilityRejectsPluralUnitFalsePositives:
+    """Regression: 'N miles from X' states no direction and must not qualify.
+
+    The v1 pattern matched it as unit 'mile' + direction 's' + 'from'.
+    """
+
+    pattern = compile_pattern(load_benchmark_config()["distance_direction_pattern"])
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "14 miles from Glade House, Milford Track",
+            "20 miles from Napier on road-side swamp",
+            "2 miles from end of Upper Plains Road, near Masterton",
+            "5 kms from the junction",
+            "300 metres from the hut",
+        ],
+    )
+    def test_no_direction_means_not_eligible(self, text):
+        assert not self.pattern.search(text), text
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "1 mile Sth of Minaret Creek",
+            "55 mls N.N.W. of Auckland",
+            "3.5 miles east of Route 6",
+            "2 kms south of the bridge",
+            "300 metres north of the hut",
+            "19 km southwest of Waiouru",
+        ],
+    )
+    def test_a_real_direction_still_qualifies(self, text):
+        assert self.pattern.search(text), text

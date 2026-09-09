@@ -10,3 +10,10 @@ data/source/*
 
 # Generated, but committed deliberately for provenance:
 #   data/benchmark/, data/ground_truth/, data/dev/
+data/linz/raw/*
+!data/linz/raw/.gitkeep
+
+# Machine-specific: generated locally by scripts/freeze.py
+experiments/freeze_manifest.json
+data/chroma/
+!data/chroma/index_manifest.json

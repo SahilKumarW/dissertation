@@ -1,0 +1,88 @@
+# Frozen model configuration.
+#
+# These are EXPERIMENTAL PARAMETERS, not secrets. They live here, committed and
+# hashed, rather than in .env: a frozen parameter hidden in an untracked file
+# cannot be recorded in provenance or reproduced by anyone else.
+#
+# Only the API key itself belongs in .env.
+
+# Which profile is active. Override per run with --profile.
+#
+# SWITCHING PROVIDERS IS A DEVELOPMENT CONVENIENCE, NOT AN EXPERIMENTAL ONE.
+# Pilots and dev runs may use whichever endpoint is responsive. The frozen
+# benchmark must run BOTH conditions on ONE profile: a different model in each
+# arm would measure model capability rather than the effect of retrieval and
+# deterministic GIS, and no result would be interpretable. The profile and the
+# served model identifier are recorded on every record, and the run summary
+# fails loudly if one output file mixes them.
+active_llm_profile: nvidia_gpt_oss
+
+# Which profile "--profile gemini" means, since there is more than one.
+default_profile_for_gemini: gemini_flash
+
+llm_profiles:
+
+  nvidia_gpt_oss:
+    provider: nvidia
+    model: openai/gpt-oss-20b
+    temperature: 0.0
+    top_p: 1.0
+    max_tokens: 16384
+    seed: 20260908
+    # gpt-oss exposes reasoning effort; this is the thinking_level recorded in
+    # the output contract (master spec section 29).
+    reasoning_effort: medium
+    record_served_model: true
+
+  gemini_flash:
+    provider: gemini
+    # Google's OpenAI-compatible endpoint takes bare model ids.
+    # gemini-3.8-flash: GA since 2 September 2026, 1M context, 65,536 max output.
+    model: gemini-3.8-flash
+    temperature: 0.0
+    top_p: 1.0
+    # Generous: this model is documented as running more reasoning steps than
+    # its predecessors, and those tokens count against the limit. Truncation is
+    # treated as a failure rather than parsed, so a tight limit costs records.
+    max_tokens: 32768
+    # The OpenAI compatibility layer maps reasoning_effort onto Gemini's own
+    # thinking_level. Flash models accept low, medium and high; Gemini 3 Flash
+    # defaults to high, so setting medium reduces both cost and latency. It
+    # matches the nvidia profile's setting, which keeps the two comparable.
+    reasoning_effort: medium
+
+    # No seed: the endpoint rejects parameters it does not implement, and a 400
+    # is deliberately not retried, so unsupported options must be absent rather
+    # than sent hopefully.
+    #
+    # TEMPERATURE, UNRESOLVED. Google advises removing explicit temperature for
+    # Gemini 3 models and using their default of 1.0, warning that low values
+    # can cause looping or degraded performance on complex tasks. That conflicts
+    # with holding decoding fixed for a reproducible experiment. It is left at
+    # 0.0 here because changing it silently would be worse than leaving it, but
+    # the tension is real: see docs/PLAN.md.
+    record_served_model: true
+
+  gemini_flash_lite:
+    provider: gemini
+    model: gemini-3.5-flash-lite
+    temperature: 0.0
+    top_p: 1.0
+    reasoning_effort: medium
+    max_tokens: 16384
+    record_served_model: true
+
+embedding:
+  # As specified in master spec section 18. Retained deliberately: with BM25 and
+  # a diacritic-folded key already in the retrieval stack, the lexical work is
+  # covered, and a multilingual encoder would add a deviation for little gain.
+  model: sentence-transformers/all-MiniLM-L6-v2
+  dimension: 384
+  similarity: cosine
+  normalise_embeddings: true
+
+reranker:
+  model: BAAI/bge-reranker-v2-m3
+  device: cpu
+  top_n_in: 50
+  top_k_out: 10

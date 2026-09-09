@@ -2,6 +2,11 @@
 #
 # The two source files are supplier data and are read-only. Copy them into
 # data/source/ (or point source_dir elsewhere with --source-dir).
+#
+# These are the supplier filenames as delivered. If a copy differs only in
+# hyphens, spaces, underscores or case, the builder resolves it and records the
+# filename it ACTUALLY read in the manifest, so provenance still names the real
+# file. Any other difference is an error rather than a guess.
 
 source_dir: data/source
 descriptions_file: SampleData-NoCoords.xlsx

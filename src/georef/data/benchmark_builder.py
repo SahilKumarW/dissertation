@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -38,6 +37,7 @@ from georef.provenance.hashing import (
     sha256_file,
     sha256_text,
 )
+from georef.spatial.bounds import containing_box
 
 __all__ = ["BuildResult", "build_benchmark", "compile_pattern", "audit_description"]
 
@@ -69,6 +69,7 @@ class BuildResult:
     dev_pool_path: Path
     audit_report_path: Path
     manifest_path: Path
+    dev_ground_truth_path: Path | None = None
     counts: dict = field(default_factory=dict)
     audit_counts: dict = field(default_factory=dict)
 
@@ -82,17 +83,6 @@ def compile_pattern(pattern: str) -> re.Pattern:
     """
     collapsed = re.sub(r"\s+", "", pattern)
     return re.compile(collapsed, re.IGNORECASE)
-
-
-def _in_any_box(lat: float, lon: float, boxes: dict) -> str | None:
-    """Return the name of the first bounding box containing the point."""
-    for name, box in boxes.items():
-        if (
-            box["lat_min"] <= lat <= box["lat_max"]
-            and box["lon_min"] <= lon <= box["lon_max"]
-        ):
-            return name
-    return None
 
 
 def audit_description(
@@ -164,7 +154,7 @@ def audit_description(
 
 
 def _load_descriptions(source_dir: Path, paths_cfg: dict) -> pd.DataFrame:
-    path = source_dir / paths_cfg["descriptions_file"]
+    path = resolve_source_file(source_dir, paths_cfg["descriptions_file"])
     frame = pd.read_excel(path, sheet_name=paths_cfg["descriptions_sheet"])
     column = paths_cfg["descriptions_column"]
     if column not in frame.columns:
@@ -182,7 +172,7 @@ def _load_descriptions(source_dir: Path, paths_cfg: dict) -> pd.DataFrame:
 
 def _build_coordinate_indexes(source_dir: Path, paths_cfg: dict) -> tuple[dict, dict, dict]:
     """Index the EVALUATION-ONLY coordinate corpus by raw and normalised locality."""
-    path = source_dir / paths_cfg["coordinates_file"]
+    path = resolve_source_file(source_dir, paths_cfg["coordinates_file"])
     metadata_columns = list(paths_cfg.get("coordinates_metadata_columns") or [])
     usecols = [
         paths_cfg["coordinates_locality_column"],
@@ -224,6 +214,63 @@ def _build_coordinate_indexes(source_dir: Path, paths_cfg: dict) -> tuple[dict, 
     return dict(exact_index), dict(norm_index), stats
 
 
+def _loose_key(name: str) -> str:
+    """Filename with separators and case removed, for tolerant matching."""
+    return re.sub(r"[\s\-_]+", "", name).lower()
+
+
+def resolve_source_file(source_dir: Path, configured_name: str) -> Path | None:
+    """Find the configured file, tolerating separator and case differences.
+
+    An exact match always wins. The fallback exists because the same supplier
+    file circulates as 'SampleDataNoCoords.xlsx' and 'SampleData-NoCoords.xlsx';
+    resolving that is a convenience, not a licence to read some other file, so
+    the match must be unambiguous and the resolved name is recorded in the
+    manifest.
+    """
+    exact = source_dir / configured_name
+    if exact.is_file():
+        return exact
+    if not source_dir.is_dir():
+        return None
+    wanted = _loose_key(configured_name)
+    matches = [p for p in source_dir.iterdir() if p.is_file() and _loose_key(p.name) == wanted]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _preflight(source_dir: Path, paths_cfg: dict) -> None:
+    """Fail early and legibly when a supplier file is absent.
+
+    A missing input is a data-integrity failure with a specific cause, not a
+    generic error, so it is reported as one (master spec section 28).
+    """
+    missing = [
+        name
+        for name in (paths_cfg["descriptions_file"], paths_cfg["coordinates_file"])
+        if resolve_source_file(source_dir, name) is None
+    ]
+    if missing:
+        listed = "\n".join(f"    {name}" for name in missing)
+        if source_dir.is_dir():
+            found = sorted(p.name for p in source_dir.iterdir() if p.is_file())
+            present = (
+                "\n".join(f"    {name}" for name in found)
+                if found
+                else "    (directory is empty)"
+            )
+        else:
+            present = "    (directory does not exist)"
+        raise FileNotFoundError(
+            f"Supplier file(s) not found in {source_dir}\n\n"
+            f"  expected but missing:\n{listed}\n\n"
+            f"  actually present:\n{present}\n\n"
+            "Filenames must match configs/paths.yaml exactly. If your copy is "
+            "named differently, update descriptions_file / coordinates_file in "
+            "that config rather than renaming the supplier data, so the manifest "
+            "records the real filename."
+        )
+
+
 def build_benchmark(
     source_dir: Path,
     output_root: Path,
@@ -235,6 +282,7 @@ def build_benchmark(
     paths_cfg = paths_cfg or load_paths_config()
 
     source_dir = Path(source_dir)
+    _preflight(source_dir, paths_cfg)
     output_root = Path(output_root)
     benchmark_dir = output_root / paths_cfg["benchmark_dir"]
     ground_truth_dir = output_root / paths_cfg["ground_truth_dir"]
@@ -275,7 +323,7 @@ def build_benchmark(
             continue
         if row["latitude"] is None or row["longitude"] is None:
             continue
-        box = _in_any_box(row["latitude"], row["longitude"], boxes)
+        box = containing_box(row["latitude"], row["longitude"], boxes)
         if box is None:
             rejected_out_of_box += 1
             continue
@@ -302,11 +350,40 @@ def build_benchmark(
             "adjust the pre-registered policy before rebuilding, and record why"
         )
 
-    # --- Seeded selection --------------------------------------------------
+    # --- Stable seeded selection -------------------------------------------
+    #
+    # Selection orders the eligible keys by SHA-256 of "<seed>:<key>" and takes
+    # the first N. This is deterministic and seed-controlled like a shuffle, but
+    # each record's position depends only on itself, so adding or removing
+    # OTHER records does not reshuffle the draw.
+    #
+    # random.sample does not have that property: correcting five ineligible
+    # records changed 52 of 75 selections, because the sample is a function of
+    # the whole list. A benchmark that churns wholesale on any construction fix
+    # is fragile, and the churn obscures what actually changed.
+    #
+    # SHA-256 is also portable in a way the Mersenne Twister is not: the
+    # ordering is identical on any interpreter and platform.
     eligible_by_key = {row["key"]: row for row in eligible}
-    ordered_keys = sorted(eligible_by_key)
-    rng = random.Random(int(benchmark_cfg["random_seed"]))
-    selected_keys = sorted(rng.sample(ordered_keys, size))
+    seed = benchmark_cfg["random_seed"]
+
+    def _draw_order(key: str, draw_seed) -> str:
+        return sha256_text(f"{draw_seed}:{key}")
+
+    ordered_keys = sorted(eligible_by_key, key=lambda k: _draw_order(k, seed))
+    selected_keys = sorted(ordered_keys[:size])
+
+    # Dev ground truth: sampled from what the benchmark left behind, with its
+    # own seed. The benchmark draw happens first and is unaffected by this
+    # addition, so benchmark.csv keeps its published hash.
+    dev_size = int(benchmark_cfg.get("dev_ground_truth_size", 0))
+    dev_seed = benchmark_cfg.get("dev_random_seed", 0)
+    taken = set(selected_keys)
+    remaining_keys = sorted(
+        (key for key in ordered_keys if key not in taken),
+        key=lambda k: _draw_order(k, dev_seed),
+    )
+    dev_selected_keys = sorted(remaining_keys[:dev_size]) if dev_size else []
 
     prefix = benchmark_cfg["benchmark_id_prefix"]
     width = max(3, len(str(size)))
@@ -315,6 +392,31 @@ def build_benchmark(
         row = dict(eligible_by_key[key])
         row["benchmark_id"] = f"{prefix}-{position:0{width}d}"
         selected.append(row)
+
+    # Validation: everything the benchmark and dev set left behind, in the same
+    # deterministic hash order, so it is reproducible and disjoint by
+    # construction rather than by check.
+    validation_setting = benchmark_cfg.get("validation_size", 0)
+    taken_for_dev = set(dev_selected_keys)
+    validation_pool = [k for k in remaining_keys if k not in taken_for_dev]
+    if validation_setting == "all":
+        validation_keys = sorted(validation_pool)
+    else:
+        validation_keys = sorted(validation_pool[: int(validation_setting or 0)])
+
+    validation_selected = []
+    for position, key in enumerate(validation_keys, start=1):
+        row = dict(eligible_by_key[key])
+        row["validation_id"] = f"{benchmark_cfg.get('validation_id_prefix', 'VAL')}-{position:03d}"
+        validation_selected.append(row)
+
+    dev_prefix = benchmark_cfg.get("dev_id_prefix", "DEVGT")
+    dev_width = max(3, len(str(dev_size)))
+    dev_selected = []
+    for position, key in enumerate(dev_selected_keys, start=1):
+        row = dict(eligible_by_key[key])
+        row["dev_gt_id"] = f"{dev_prefix}-{position:0{dev_width}d}"
+        dev_selected.append(row)
 
     # --- Artefacts ---------------------------------------------------------
     line_terminator = benchmark_cfg["csv_line_terminator"]
@@ -353,6 +455,101 @@ def build_benchmark(
         float_format=coord_format,
     )
 
+    if dev_selected:
+        dev_gt_frame = pd.DataFrame(
+            [
+                {
+                    "dev_gt_id": r["dev_gt_id"],
+                    "description": r["description"],
+                    "decimal_latitude": r["latitude"],
+                    "decimal_longitude": r["longitude"],
+                    "audit_category": r["audit_category"],
+                    "bounding_box": r["bounding_box"],
+                    "source_event_ids": "|".join(r["source_event_ids"]),
+                }
+                for r in dev_selected
+            ]
+        )
+        # Descriptions only, so the extraction stage never opens a file that
+        # contains answers. Mirrors benchmark.csv, for the same reason.
+        dev_descriptions_frame = pd.DataFrame(
+            [{"dev_gt_id": r["dev_gt_id"], "description": r["description"]} for r in dev_selected]
+        )
+        dev_descriptions_frame.to_csv(
+            dev_dir / "dev_descriptions.csv", index=False, lineterminator=line_terminator
+        )
+
+        dev_gt_path = dev_dir / "dev_ground_truth.csv"
+        dev_gt_frame.to_csv(
+            dev_gt_path,
+            index=False,
+            lineterminator=line_terminator,
+            float_format=coord_format,
+        )
+        dev_gt_hash = sha256_file(dev_gt_path)
+        (dev_dir / "dev_ground_truth_hash.txt").write_text(dev_gt_hash + "\n", encoding="utf-8")
+    else:
+        dev_gt_path, dev_gt_hash = None, None
+
+    validation_hash = None
+    if validation_selected:
+        validation_dir = output_root / "data" / "validation"
+        validation_dir.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(
+            [{"validation_id": r["validation_id"], "description": r["description"]}
+             for r in validation_selected]
+        ).to_csv(validation_dir / "validation.csv", index=False, lineterminator=line_terminator)
+        validation_gt = validation_dir / "validation_ground_truth.csv"
+        pd.DataFrame(
+            [
+                {
+                    "validation_id": r["validation_id"],
+                    "decimal_latitude": r["latitude"],
+                    "decimal_longitude": r["longitude"],
+                    "audit_category": r["audit_category"],
+                    "bounding_box": r["bounding_box"],
+                    "source_event_ids": "|".join(r["source_event_ids"]),
+                }
+                for r in validation_selected
+            ]
+        ).to_csv(validation_gt, index=False, lineterminator=line_terminator,
+                 float_format=coord_format)
+        validation_hash = sha256_file(validation_gt)
+        (validation_dir / "validation_ground_truth_hash.txt").write_text(
+            validation_hash + "\n", encoding="utf-8"
+        )
+
+    # Selection set: dev + benchmark, the data parameters may be fitted to under
+    # experiment v2. Emitted as one file so a sweep cannot accidentally fit to
+    # the validation set by pointing at the wrong path.
+    selection_dir = output_root / "data" / "selection"
+    selection_dir.mkdir(parents=True, exist_ok=True)
+    selection_rows = [
+        {"selection_id": r["dev_gt_id"], "description": r["description"], "origin": "dev",
+         "latitude": r["latitude"], "longitude": r["longitude"]}
+        for r in dev_selected
+    ] + [
+        {"selection_id": r["benchmark_id"], "description": r["description"], "origin": "benchmark",
+         "latitude": r["latitude"], "longitude": r["longitude"]}
+        for r in selected
+    ]
+    selection_rows.sort(key=lambda r: r["selection_id"])
+    pd.DataFrame(
+        [{"selection_id": r["selection_id"], "description": r["description"],
+          "origin": r["origin"]} for r in selection_rows]
+    ).to_csv(selection_dir / "selection_descriptions.csv", index=False,
+             lineterminator=line_terminator)
+    selection_gt = selection_dir / "selection_ground_truth.csv"
+    pd.DataFrame(
+        [{"selection_id": r["selection_id"], "decimal_latitude": r["latitude"],
+          "decimal_longitude": r["longitude"], "origin": r["origin"]} for r in selection_rows]
+    ).to_csv(selection_gt, index=False, lineterminator=line_terminator,
+             float_format=coord_format)
+    selection_hash = sha256_file(selection_gt)
+    (selection_dir / "selection_ground_truth_hash.txt").write_text(
+        selection_hash + "\n", encoding="utf-8"
+    )
+
     selected_key_set = {r["key"] for r in selected}
     dev_frame = descriptions[~descriptions["key"].isin(selected_key_set)].copy()
     dev_frame = dev_frame.sort_values("key").reset_index(drop=True)
@@ -372,6 +569,9 @@ def build_benchmark(
         "benchmark_size": len(selected),
         "defensible_denominator": len(selected),
         "dev_pool_size": int(len(dev_frame)),
+        "dev_ground_truth_size": len(dev_selected),
+        "validation_size": len(validation_selected),
+        "selection_set_size": len(selection_rows),
         **corpus_stats,
     }
 
@@ -415,6 +615,9 @@ def build_benchmark(
             "benchmark_size": size,
             "one_record_per_coordinate": bool(benchmark_cfg.get("one_record_per_coordinate", False)),
             "random_seed": benchmark_cfg["random_seed"],
+            "selection_method": "sha256(seed:key) ordering, stable under pool changes",
+            "dev_ground_truth_size": dev_size,
+            "dev_random_seed": benchmark_cfg.get("dev_random_seed"),
             "normalisation_version": normalisation_version(),
         },
         "counts": counts,
@@ -423,14 +626,16 @@ def build_benchmark(
             "benchmark.csv": benchmark_hash,
             "ground_truth.csv": ground_truth_hash,
             "dev_pool.csv": sha256_file(dev_path),
+            **({"dev_ground_truth.csv": dev_gt_hash} if dev_gt_hash else {}),
+            **({"validation_ground_truth.csv": validation_hash} if validation_hash else {}),
+            "selection_ground_truth.csv": selection_hash,
         },
         "source_hashes": {
-            paths_cfg["descriptions_file"]: sha256_file(
-                source_dir / paths_cfg["descriptions_file"]
-            ),
-            paths_cfg["coordinates_file"]: sha256_file(
-                source_dir / paths_cfg["coordinates_file"]
-            ),
+            # Keyed by the filename actually read, not the configured one.
+            resolve_source_file(source_dir, name).name: sha256_file(
+                resolve_source_file(source_dir, name)
+            )
+            for name in (paths_cfg["descriptions_file"], paths_cfg["coordinates_file"])
         },
         "code_hashes": {
             "benchmark_builder.py": sha256_text(builder_source),
@@ -453,6 +658,7 @@ def build_benchmark(
         ground_truth_path=ground_truth_path,
         dev_pool_path=dev_path,
         audit_report_path=audit_report_path,
+        dev_ground_truth_path=dev_gt_path,
         manifest_path=manifest_path,
         counts=counts,
         audit_counts=audit_counts,
@@ -470,7 +676,11 @@ def main(argv: list[str] | None = None) -> int:
     source_dir = Path(args.source_dir) if args.source_dir else root / paths_cfg["source_dir"]
     output_root = Path(args.output_root) if args.output_root else root
 
-    result = build_benchmark(source_dir, output_root, load_benchmark_config(), paths_cfg)
+    try:
+        result = build_benchmark(source_dir, output_root, load_benchmark_config(), paths_cfg)
+    except FileNotFoundError as error:
+        print(f"BUILD FAILED -- missing input\n\n{error}")
+        return 2
 
     print("Benchmark construction complete.\n")
     print("Audit of DISTANCE_DIRECTION candidates:")

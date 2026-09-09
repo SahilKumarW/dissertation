@@ -6,12 +6,16 @@
 #
 # See docs/BENCHMARK_CONSTRUCTION.md for the rationale behind each choice.
 
-benchmark_version: nz-dd-v1
+benchmark_version: nz-dd-v2
 
 # --- Eligibility -----------------------------------------------------------
 # A description is a DISTANCE_DIRECTION candidate if this pattern matches.
 # Matched case-insensitively against the ORIGINAL description text.
 #   optional hedge -> number -> distance unit -> compass direction -> of/from
+#
+# The \b after the unit group is load-bearing. Without it, "14 miles from X"
+# matches as unit "mile" + direction "s" + "from", admitting descriptions that
+# state no direction at all. See docs/BENCHMARK_CONSTRUCTION.md section 8.
 #
 # The pattern is written across several lines for readability. ALL literal
 # whitespace is removed before compilation, so spaces must be expressed as
@@ -19,7 +23,7 @@ benchmark_version: nz-dd-v1
 # match does not depend on backtracking.
 distance_direction_pattern: >-
   (?:ca\.?|c\.?|approx\.?|approximately|about|~)?\s*\d+(?:[\.,]\d+)?\s*
-  (?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\s*\.?\s*
+  (?:kilometres?|kilometers?|kms|km|metres?|meters?|miles?|mls|mi|m)\b\s*\.?\s*
   (?:north[\s\-]?north[\s\-]?east|north[\s\-]?north[\s\-]?west|
   south[\s\-]?south[\s\-]?east|south[\s\-]?south[\s\-]?west|
   east[\s\-]?north[\s\-]?east|east[\s\-]?south[\s\-]?east|
@@ -72,6 +76,33 @@ one_record_per_coordinate: true
 benchmark_size: 75
 random_seed: 20260908
 benchmark_id_prefix: NZDD
+
+# --- Development ground truth ----------------------------------------------
+# A held-out tuning set, drawn from the eligible records the benchmark did not
+# take. Its purpose is declared in advance and is narrow:
+#
+#   selecting the retrieval configuration (which channels, whether to rerank)
+#   ONCE, before the experiment freeze.
+#
+# It exists so that choice is measured rather than asserted. It is not a second
+# benchmark: no headline result is reported from it, and after the freeze it is
+# not consulted again. Benchmark records are excluded from it by construction,
+# and the one-record-per-coordinate rule spans both sets, so no dev record
+# shares a ground-truth coordinate with a benchmark record.
+dev_ground_truth_size: 100
+dev_random_seed: 20260909
+dev_id_prefix: DEVGT
+
+# --- Validation set --------------------------------------------------------
+# The eligible records neither the benchmark nor the dev set took. Held back
+# and untouched, so a hypothesis formed after seeing the benchmark can still be
+# tested on data that has never been used for anything.
+#
+# Its existence is not a licence to keep testing until something works: it can
+# be spent once. After that there is no clean data left, and any further
+# hypothesis is exploratory in the strict sense.
+validation_size: all
+validation_id_prefix: VAL
 
 # --- Output formatting -----------------------------------------------------
 # Fixed so that a rebuild is byte-identical.

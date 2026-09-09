@@ -1,0 +1,44 @@
+# Prediction pipeline policy.
+#
+# FIXED PRE-BENCHMARK PARAMETERS. The dev set may choose between the options
+# listed here, once, before the freeze. The benchmark never does.
+
+multi_anchor:
+  # first    -- use the first clause as written; no heuristic to defend
+  # shortest -- use the smallest offset; it compounds the least anchor error
+  # fuse     -- combine estimates weighted by inverse offset, and abstain when
+  #             they disagree
+  policy: fuse
+
+  # Two clauses describing the same point should land close together. A larger
+  # gap means something is wrong -- wrong anchor, misread bearing, misread
+  # distance -- and that is knowable without ground truth. 25 km is set against
+  # the benchmark's own error floor (NZMS 260 derived ground truth, one to a few
+  # kilometres) plus room for gazetteer anchor imprecision; a threshold near the
+  # floor would abstain on ordinary noise.
+  disagreement_threshold_metres: 25000
+
+  # Floor on the weighting denominator so a stated offset of zero cannot take
+  # infinite weight.
+  minimum_weight_metres: 100
+
+# Master spec section 47: never plot or report an invalid coordinate. A
+# prediction outside New Zealand is a failure with a reason, not a data point.
+coordinate_sanity:
+  enforce_bounding_boxes: true
+  boxes:
+    nz_mainland:
+      lat_min: -47.5
+      lat_max: -34.0
+      lon_min: 166.0
+      lon_max: 179.2
+    chatham_islands:
+      lat_min: -44.5
+      lat_max: -43.5
+      lon_min: -177.2
+      lon_max: -175.7
+    offshore_islands:
+      lat_min: -52.7
+      lat_max: -29.0
+      lon_min: 165.5
+      lon_max: 179.2

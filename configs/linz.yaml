@@ -1,0 +1,115 @@
+# LINZ ingestion policy.
+#
+# LINZ is the AUTHORITATIVE geographic grounding source (master spec section 6).
+# It is fetched exactly once into a frozen, hashed snapshot; every later stage
+# reads the snapshot, never the live service. A LINZ update mid-project
+# therefore cannot silently change experimental results.
+
+dataset:
+  # NZ Place Names (NZGB) -- the New Zealand Gazetteer place names layer.
+  # https://data.linz.govt.nz/layer/51681-nz-place-names-nzgb/
+  layer_id: layer-51681
+  dataset_name: NZ Place Names (NZGB)
+  source_authority: LINZ
+
+service:
+  # {key} is substituted from the LINZ_API_KEY environment variable and is
+  # never written to a manifest, log, or error message.
+  base_url_template: "https://data.linz.govt.nz/services;key={key}/wfs"
+  version: "2.0.0"
+  output_format: json
+  srs_name: "EPSG:4326"
+  # Page boundaries are only stable if the server sorts deterministically.
+  # Without sortBy, paging can duplicate or drop records between pages.
+  sort_by: name_id
+  page_size: 5000
+  timeout_seconds: 120
+
+retry_policy:
+  max_retries: 3
+  backoff_factor: 2
+  # Authentication and client errors are configuration faults, not transient
+  # ones. Retrying them wastes quota and hides the real cause.
+  retry_on_status: [429, 500, 502, 503, 504]
+
+# Field mapping from the WFS feature properties to the internal record schema
+# (master spec section 17). Verify against a live --describe run before the
+# full fetch; the ingest fails loudly if a required source field is absent.
+fields:
+  linz_id: name_id
+  name: name
+  feature_type: feat_type
+  latitude: crd_latitude
+  longitude: crd_longitude
+  name_status: status
+  feature_id: feat_id
+  coordinate_datum: crd_datum
+
+  # Three distinct administrative fields, confirmed against a live --describe.
+  # They are NOT interchangeable and the benchmark descriptions use all three
+  # vocabularies, so all three are retained for regional compatibility scoring
+  # (master spec section 23):
+  #   land_district -- historical survey districts (Westland, North Auckland,
+  #     Nelson, Buller). This is the vocabulary most collection labels use.
+  #   region -- modern regional council (Manawatu-Whanganui). Sparsely
+  #     populated in this layer.
+  #   territorial_authority -- district/city council (Westland District).
+  land_district: land_district
+  region: region
+  territorial_authority: territorial_authority
+
+  # Positional quality signals, confirmed present in the live layer. Sparse on
+  # the sample record, so verify.py reports how populated they are; they are
+  # captured now because a re-ingest after the freeze would not be permitted.
+  accuracy: accuracy
+  accuracy_rating: accuracy_rating
+
+  # The point may be a representative point for a line or polygon feature
+  # rather than a true point location, which bears on how much positional
+  # weight a candidate deserves.
+  geometry_type: geom_type
+
+  # NOTE: the source column named maori_name is a Yes/No flag indicating
+  # whether the name is a Maori name. It is NOT an alternative name. Mapped
+  # under an honest internal name so nothing downstream treats it as a string
+  # to match against.
+  is_maori_name: maori_name
+
+required_fields: [linz_id, name, latitude, longitude]
+
+# Coordinates are NZGD2000 decimal degrees. NZGD2000 and WGS84 agree to well
+# under a metre for this purpose, far below the benchmark's error floor, so no
+# datum transformation is applied. Recorded here so the choice is explicit.
+datum_note: "NZGD2000 treated as WGS84; divergence is sub-metre and immaterial at this scale"
+
+# The gazetteer covers the Ross Dependency and the continental shelf as well as
+# New Zealand. Records outside these boxes are excluded and counted, not
+# silently dropped. Chatham Islands need their own box: they lie east of the
+# antimeridian and carry negative longitudes.
+bounding_boxes:
+  nz_mainland:
+    lat_min: -47.5
+    lat_max: -34.0
+    lon_min: 166.0
+    lon_max: 179.2
+  chatham_islands:
+    lat_min: -44.5
+    lat_max: -43.5
+    lon_min: -177.2
+    lon_max: -175.7
+  offshore_islands:
+    lat_min: -52.7
+    lat_max: -29.0
+    lon_min: 165.5
+    lon_max: 179.2
+
+# Keep unofficial names. Historical collection localities routinely use names
+# that were never gazetted as official, so excluding them would remove valid
+# anchors. Status is retained in the record and is available to the
+# disambiguator as evidence.
+include_name_statuses: all
+
+paths:
+  raw_dir: data/linz/raw
+  normalised_dir: data/linz/normalised
+  manifest_dir: data/linz/manifests

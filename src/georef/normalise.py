@@ -20,7 +20,13 @@ from __future__ import annotations
 import re
 import unicodedata
 
-__all__ = ["normalise", "normalisation_version"]
+__all__ = [
+    "normalise",
+    "normalisation_version",
+    "fold_diacritics",
+    "match_key",
+    "match_key_version",
+]
 
 # Version string recorded in provenance. Bump whenever the behaviour of
 # normalise() changes, because the benchmark join key depends on it.
@@ -93,3 +99,49 @@ def normalise(text: object) -> str:
 def normalisation_version() -> str:
     """Version identifier for the normalisation behaviour, for provenance."""
     return NORMALISATION_VERSION
+
+
+# ---------------------------------------------------------------------------
+# Gazetteer matching key
+# ---------------------------------------------------------------------------
+#
+# New Zealand place names carry macrons: the gazetteer holds "Ōpōtiki" and
+# "Whangamatā" while historical collection labels almost always write "Opotiki"
+# and "Whangamata". normalise() applies NFKC, which preserves those macrons, so
+# the two forms never match.
+#
+# This is deliberately a SEPARATE function rather than a change to normalise().
+# normalise() defines the benchmark join key; altering it would change the
+# frozen benchmark and evaluation artefacts and their published hashes.
+# match_key() is additive and used only for looking names up against the
+# gazetteer.
+#
+# Folding is lossy — it cannot distinguish two names that differ only by a
+# macron — so the unfolded name is always retained on the record, and a folded
+# match is evidence for a candidate rather than proof of identity.
+
+MATCH_KEY_VERSION = "match-key-v1"
+
+_COMBINING_MARKS = "Mn"
+
+
+def fold_diacritics(text: str) -> str:
+    """Strip combining marks: 'Ōpōtiki' -> 'Opotiki', 'Whangamatā' -> 'Whangamata'."""
+    decomposed = unicodedata.normalize("NFD", str(text))
+    stripped = "".join(
+        char for char in decomposed if unicodedata.category(char) != _COMBINING_MARKS
+    )
+    return unicodedata.normalize("NFC", stripped)
+
+
+def match_key(text: object) -> str:
+    """Lookup key for matching a name against the gazetteer.
+
+    normalise() plus diacritic folding. Use for gazetteer lookup only, never as
+    a benchmark join key.
+    """
+    return fold_diacritics(normalise(text))
+
+
+def match_key_version() -> str:
+    return MATCH_KEY_VERSION

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from georef.config.loader import load_benchmark_config, load_paths_config, repo_root
+from georef.data.benchmark_builder import resolve_source_file
 
 ROOT = repo_root()
 
@@ -24,7 +25,7 @@ def benchmark_cfg():
 def source_dir(paths_cfg):
     directory = ROOT / paths_cfg["source_dir"]
     for name in (paths_cfg["descriptions_file"], paths_cfg["coordinates_file"]):
-        if not (directory / name).is_file():
+        if resolve_source_file(directory, name) is None:
             pytest.skip(f"supplier file not present: {name}")
     return directory
 

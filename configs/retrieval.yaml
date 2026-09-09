@@ -1,0 +1,60 @@
+# Retrieval policy.
+#
+# FIXED PRE-BENCHMARK ENGINEERING POLICY (master spec section 20). These values
+# are set by judgement and, if measured at all, are measured on the dev set --
+# never on the 75-row benchmark. They are not claimed to be optimal.
+
+collection_name: nz_geographic_entities
+
+# Four channels, fused. Lexical channels carry most of the load here because
+# anchors are proper nouns; the dense channel contributes on paraphrase and
+# partial forms.
+channels:
+  exact_name:      {enabled: true,  top_k: 10}
+  folded_name:     {enabled: true,  top_k: 10}   # diacritic-insensitive
+  bm25:            {enabled: true,  top_k: 50}
+  dense:           {enabled: true,  top_k: 50}
+
+# Reciprocal Rank Fusion. Chosen over weighted score fusion precisely because
+# it is effectively parameter-free: weighted fusion would need tuning, and
+# tuning is what the experiment protocol forbids near the benchmark.
+# k=60 is the value from the original RRF paper, adopted as-is, not tuned.
+fusion:
+  method: rrf
+  k: 60
+
+# Ordering must be total and stable so a rerun cannot silently change which
+# candidate wins a tie.
+tie_break: linz_id_ascending
+
+rerank:
+  enabled: true
+  top_n_in: 50
+  top_k_out: 10
+
+# Text used to build the BM25 document and the embedded document for each
+# gazetteer record. Kept identical so the two channels see the same evidence.
+document_template: "{name} | {feature_type} | {land_district} | New Zealand"
+
+# Candidates handed to the disambiguator.
+final_top_k: 10
+
+# Two-pass retrieval (optional, measured on the dev set before any freeze).
+#
+# Pass one queries the gazetteer with the raw description and tells the model
+# which names in it are real New Zealand places. Pass two is the usual grounding
+# query after interpretation.
+#
+# NAMES ONLY are given to the model, never coordinates. The architecture's
+# responsibility split holds because the model does not know where anything is;
+# naming strings it can already see does not change that, and handing it
+# coordinates would.
+#
+# Motivation: the model has to work out which strings are place names by itself,
+# and gets it wrong on back-references ("200m west of Pass") and on misspellings.
+# Whether the hints actually help is an open question, which is why this is a
+# switch and part of the ablation rather than a change to the pipeline.
+pre_retrieval_hints:
+  enabled: false
+  max_hints: 12
+  max_name_tokens: 4
