@@ -7,12 +7,24 @@ dependencies = [
     "pandas>=2.0",
     "openpyxl>=3.1",
     "pyyaml>=6.0",
+    "pydantic>=2.0",
     "openai>=1.40",
     "geographiclib>=2.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = [
+    "pytest>=8.0",
+    "scipy>=1.10.0",
+]
+retrieval = [
+    "bm25s>=0.1.10",
+    "sentence-transformers>=2.2.0",
+    "chromadb>=0.4.0",
+]
+all = [
+    "dissertation-georef[dev,retrieval]",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
