@@ -1,7 +1,7 @@
 # Natural-Language Spatial Georeferencing: Standalone LLM vs. Neuro-Symbolic Hybrid Pipeline
 
 **MSc Artificial Intelligence Dissertation — Cardiff University**  
-**Author:** Candidate Research Repository  
+**Author:** Sahil -  
 **Status:** Complete & Frozen (`0f97cf091a529cf6`, Experiment Version `v2`)  
 **Core Finding:** The neuro-symbolic hybrid pipeline alters the error distribution (substantially increasing sub-kilometre precision but also catastrophic outliers) while failing to demonstrate a statistically significant reduction in median paired geodesic error over the frontier standalone LLM ($p = 0.524$, effect size $r = 0.087$).
 
